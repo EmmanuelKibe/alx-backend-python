@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
 class User(AbstractUser):
     user_id = models.UUIDField(
@@ -28,6 +28,21 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='guest')
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    groups = models.ManyToManyField(
+        Group,
+        related_name="chat_user_set",  # custom related_name
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups'
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="chat_user_permissions",  # custom related_name
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions'
+    )
 
     REQUIRED_FIELDS = ['email']
     USERNAME_FIELD = 'email'   # email used to log in
