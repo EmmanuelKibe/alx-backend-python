@@ -44,8 +44,8 @@ class User(AbstractUser):
         verbose_name='user permissions'
     )
 
-    REQUIRED_FIELDS = ['email']
-    USERNAME_FIELD = 'email'   # email used to log in
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     def __str__(self):
         return f"{self.email} ({self.role})"
