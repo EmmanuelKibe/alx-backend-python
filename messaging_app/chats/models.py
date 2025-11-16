@@ -9,6 +9,9 @@ class User(AbstractUser):
         editable=False,
         db_index=True
     )
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    password = models.CharField(max_length=128)
 
     # Override username to be optional since email will be unique
     username = models.CharField(max_length=150, blank=True, null=True, unique=False)
