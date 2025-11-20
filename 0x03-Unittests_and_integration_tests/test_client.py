@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
+from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -68,3 +69,39 @@ def test_public_repos(self, mock_get_json):
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos"
         )
+
+@parameterized_class([
+    {
+        "org_payload": org_payload,
+        "repos_payload": repos_payload,
+        "expected_repos": expected_repos,
+        "apache2_repos": apache2_repos
+    }
+])
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Patch requests.get to return fixture data based on URL."""
+        cls.get_patcher = patch("client.requests.get")
+        cls.mock_get = cls.get_patcher.start()
+
+        # Side effect function to return correct payload per URL
+        def side_effect(url, *args, **kwargs):
+            mock_resp = Mock()
+            if url.endswith("/orgs/google"):
+                mock_resp.json.return_value = cls.org_payload
+            else:
+                mock_resp.json.return_value = cls.repos_payload
+            return mock_resp
+
+        cls.mock_get.side_effect = side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """Test that public_repos returns the expected repository names."""
+        client = GithubOrgClient("google")
+        repos = client.public_repos()
+        self.assertEqual(repos, self.expected_repos)
