@@ -43,6 +43,19 @@ class TestGithubOrgClient(unittest.TestCase):
         result = client.has_license(repo, license_key)
         self.assertEqual(result, expected)
 
+    def test_public_repos(self):
+        """Test that public_repos returns all repository names."""
+        client = GithubOrgClient("google")
+        repos = client.public_repos()
+        self.assertEqual(repos, self.expected_repos)
+
+
+    def test_public_repos_with_license(self):
+        """Test that public_repos filtered by license returns expected repos."""
+        client = GithubOrgClient("google")
+        repos = client.public_repos(license="apache-2.0")
+        self.assertEqual(repos, self.apache2_repos)
+
 @patch("client.get_json")
 def test_public_repos(self, mock_get_json):
     # 1. Mock get_json return value (payload of your choice)
@@ -105,3 +118,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient("google")
         repos = client.public_repos()
         self.assertEqual(repos, self.expected_repos)
+
+    
+
