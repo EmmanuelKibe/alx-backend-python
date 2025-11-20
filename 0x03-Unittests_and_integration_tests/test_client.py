@@ -21,7 +21,6 @@ class TestGithubOrgClient(unittest.TestCase):
         )
         self.assertEqual(result, {"payload": True})
 
-    
     def test_public_repos_url(self):
         expected_url = "https://api.github.com/orgs/test_org/repos"
         payload = {"repos_url": expected_url}
@@ -33,6 +32,15 @@ class TestGithubOrgClient(unittest.TestCase):
         ):
             client = GithubOrgClient("test_org")
             self.assertEqual(client._public_repos_url, expected_url)
+        
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        client = GithubOrgClient("test_org")
+        result = client.has_license(repo, license_key)
+        self.assertEqual(result, expected)
 
 @patch("client.get_json")
 def test_public_repos(self, mock_get_json):
