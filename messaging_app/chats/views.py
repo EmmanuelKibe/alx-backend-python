@@ -77,6 +77,11 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def get_queryset(self):
+        # Only messages where the user is a participant
+        return Message.objects.filter(conversation__participants=self.request.user)
+
 
 
 
