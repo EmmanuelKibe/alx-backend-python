@@ -20,26 +20,23 @@ class ConversationViewSet(viewsets.ModelViewSet):
         participant_ids = request.data.get("participants", [])
 
         if not participant_ids:
-            return Response(
-                {"error": "Please provide participant IDs."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Please provide participant IDs."}, status=400)
+
+        # Ensure the authenticated user is included
+        if str(request.user.user_id) not in participant_ids:
+            return Response({"error": "You must be a participant in the conversation."}, status=403)
 
         users = User.objects.filter(user_id__in=participant_ids)
 
         if len(users) != len(participant_ids):
-            return Response(
-                {"error": "One or more participants not found."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "One or more participants not found."}, status=400)
 
-        # Create conversation
         conversation = Conversation.objects.create()
         conversation.participants.set(users)
-        conversation.save()
 
         serializer = self.get_serializer(conversation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=201)
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
