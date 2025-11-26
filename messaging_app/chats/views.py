@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsConversationParticipant
 
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
@@ -11,10 +13,16 @@ from .serializers import ConversationSerializer, MessageSerializer
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated, IsConversationParticipant]
 
     def get_queryset(self):
         # Only show conversations where the authenticated user is a participant
         return Conversation.objects.filter(participants=self.request.user)
+    
+    def get_object(self):  # needed for object-level permission
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def create(self, request, *args, **kwargs):
         participant_ids = request.data.get("participants", [])
@@ -41,6 +49,16 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated, IsConversationParticipant]
+
+    def get_queryset(self):
+        # Only messages where the user is a participant
+        return Message.objects.filter(conversation__participants=self.request.user)
+    
+    def get_object(self):
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def create(self, request, *args, **kwargs):
         conversation_id = request.data.get("conversation")
@@ -73,9 +91,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=201)
 
     
-    def get_queryset(self):
-        # Only messages where the user is a participant
-        return Message.objects.filter(conversation__participants=self.request.user)
+    
 
 
 
