@@ -44,39 +44,34 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         conversation_id = request.data.get("conversation")
-        sender_id = request.data.get("sender")
         message_body = request.data.get("message_body", "").strip()
 
-        # Validate input
-        if not conversation_id or not sender_id or not message_body:
+        if not conversation_id or not message_body:
             return Response(
-                {"error": "conversation, sender, and message_body are required."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "conversation and message_body are required."},
+                status=400
             )
 
-        # Validate conversation and sender
+        # Validate conversation exists
         try:
             conversation = Conversation.objects.get(conversation_id=conversation_id)
-            sender = User.objects.get(user_id=sender_id)
         except Conversation.DoesNotExist:
-            return Response(
-                {"error": "Conversation not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"error": "Sender not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Conversation not found."}, status=404)
 
+        # Ensure user is part of the conversation
+        if request.user not in conversation.participants.all():
+            return Response({"error": "You are not a participant of this conversation."}, status=403)
+
+        # Sender is ALWAYS the authenticated user, not from request body
         message = Message.objects.create(
             conversation=conversation,
-            sender=sender,
+            sender=request.user,
             message_body=message_body
         )
 
         serializer = self.get_serializer(message)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=201)
+
     
     def get_queryset(self):
         # Only messages where the user is a participant
