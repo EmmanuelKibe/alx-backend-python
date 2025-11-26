@@ -12,6 +12,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
 
+    def get_queryset(self):
+        # Only show conversations where the authenticated user is a participant
+        return Conversation.objects.filter(participants=self.request.user)
+
     def create(self, request, *args, **kwargs):
         participant_ids = request.data.get("participants", [])
 
