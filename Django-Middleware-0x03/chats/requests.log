@@ -1,0 +1,7 @@
+# chats/requests.log
+2024-06-15 10:15:32 - INFO - GET /api/messages/ - 200 OK
+2024-06-15 10:16:05 - INFO - POST /api/messages/ - 201 Created
+2024-06-15 10:17:20 - INFO - GET /api/messages/1/ - 200 OK
+
+
+
