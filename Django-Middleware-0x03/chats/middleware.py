@@ -88,3 +88,20 @@ class OffensiveLanguageMiddleware:
         if x_forwarded_for:
             return x_forwarded_for.split(",")[0]
         return request.META.get("REMOTE_ADDR")
+
+class RolepermissionMiddleware:
+    """
+    Middleware that restricts access to certain views based on user roles.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Example: restrict access to admin-only views
+        if request.path.startswith("/admin/") and not request.user.is_staff:
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("You do not have permission to access this page.")
+
+        response = self.get_response(request)
+        return response
