@@ -1,0 +1,6 @@
+2025-11-29 16:01:42.266055 - User: AnonymousUser - Path: /
+2025-11-29 16:01:43.097856 - User: AnonymousUser - Path: /favicon.ico
+2025-11-29 16:01:55.582724 - User: AnonymousUser - Path: /api/
+2025-11-29 16:02:04.516661 - User: AnonymousUser - Path: /api-auth/
+2025-11-29 16:02:16.643886 - User: AnonymousUser - Path: /api-auth/login
+2025-11-29 16:02:16.659029 - User: AnonymousUser - Path: /api-auth/login/
