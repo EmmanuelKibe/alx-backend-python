@@ -13,7 +13,7 @@ class Message(models.Model):
     receiver = models.CharField(max_length=100)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    edited = models.BooleanField(default=False) 
+    edited_by = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} at {self.timestamp}"
