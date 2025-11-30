@@ -19,12 +19,27 @@ def notify_new_message(sender, instance, created, **kwargs):
             print(f"Receiver user {instance.receiver} does not exist. No notification created.")
 
 @receiver(pre_save, sender=Message)
-def log_message_edit(sender, instance, created, **kwargs):
-    if not created and instance.edited:
-        old_message = Message.objects.get(id=instance.id)
-        if old_message.content != instance.content:
-            MessageHistory.objects.create(
-                message=instance,
-                old_content=old_message.content
-            )
-            print(f"Message ID {instance.id} edited. Old content logged in MessageHistory.")
+def log_message_edit(sender, instance, **kwargs):
+    # Only run if message already exists (i.e., being updated)
+    if instance.pk is None:
+        return
+
+    try:
+        old_message = Message.objects.get(pk=instance.pk)
+    except Message.DoesNotExist:
+        return
+
+    # Check if content changed
+    if old_message.content != instance.content:
+        MessageHistory.objects.create(
+            message=instance,
+            old_content=old_message.content
+        )
+
+        # Mark message as edited
+        instance.edited = True
+
+        print(
+            f"Message {instance.pk} edited. "
+            f"Old content saved to history."
+        )
