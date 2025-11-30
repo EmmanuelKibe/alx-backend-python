@@ -2,7 +2,7 @@
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Message, Notification, User
+from .models import Message, Notification, User, MessageHistory
 
 
 @receiver(post_save, sender=Message)
@@ -18,3 +18,13 @@ def notify_new_message(sender, instance, created, **kwargs):
         except User.DoesNotExist:
             print(f"Receiver user {instance.receiver} does not exist. No notification created.")
 
+@receiver(post_save, sender=Message)
+def log_message_edit(sender, instance, created, **kwargs):
+    if not created and instance.edited:
+        old_message = Message.objects.get(id=instance.id)
+        if old_message.content != instance.content:
+            MessageHistory.objects.create(
+                message=instance,
+                old_content=old_message.content
+            )
+            print(f"Message ID {instance.id} edited. Old content logged in MessageHistory.")
