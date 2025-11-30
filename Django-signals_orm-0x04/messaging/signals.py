@@ -9,3 +9,4 @@ from .models import Message
 def notify_new_message(sender, instance, created, **kwargs):
     if created:
         print(f"New message created from {instance.sender} to {instance.receiver}: {instance.content}")
+
