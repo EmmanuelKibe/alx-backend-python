@@ -1,8 +1,9 @@
 #Create Django signals to trigger a notification when a new Message instance is created
 
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from .models import Message, Notification, User, MessageHistory
+from django.contrib.auth import get_user_model
 
 
 @receiver(post_save, sender=Message)
@@ -43,3 +44,33 @@ def log_message_edit(sender, instance, **kwargs):
             f"Message {instance.pk} edited. "
             f"Old content saved to history."
         )
+
+# Signal to handle user deletion and cascade delete related data 
+
+User = get_user_model()
+
+@receiver(post_delete, sender=User)
+def delete_related_user_data(sender, instance, **kwargs):
+    """Delete all messages, notifications, and message histories of the user."""
+
+    # DELETE MESSAGES SENT BY THE USER
+    sent_messages = Message.objects.filter(sender=instance.username)
+    sent_count = sent_messages.count()
+    sent_messages.delete()
+
+    # DELETE NOTIFICATIONS
+    notifications = Notification.objects.filter(user=instance)
+    notif_count = notifications.count()
+    notifications.delete()
+
+    # DELETE MESSAGE HISTORY
+    histories = MessageHistory.objects.filter(message__sender=instance.username)
+    hist_count = histories.count()
+    histories.delete()
+
+    print(
+        f"User '{instance.username}' deleted → "
+        f"{sent_count} sent messages, "
+        f"{notif_count} notifications, "
+        f"{hist_count} histories removed."
+    )
