@@ -5,6 +5,11 @@ services:
     image: mysql:8.0
     container_name: messaging-db
     restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DB: messaging_db
+      MYSQL_USER: messaging_user
+      MYSQL_PASSWORD: messaging_pass
     env_file:
       - .env
     ports:
@@ -15,7 +20,7 @@ services:
   web:
     build: .
     container_name: messaging-web
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
