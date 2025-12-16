@@ -8,6 +8,14 @@ ENV PYTHONUNBUFFERED=1
 # Set working directory in the container
 WORKDIR /app
 
+# Install system-level dependencies for PyGObject and other packages
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libcairo2-dev \
+    libgirepository1.0-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements.txt first to leverage Docker cache
 COPY requirements.txt /app/
 
