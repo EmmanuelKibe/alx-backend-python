@@ -1,9 +1,0 @@
-#!/bin/bash
-# Note: no more .exe!
-minikube start --driver=docker --profile=primary
-
-echo "--- Cluster Info ---"
-kubectl cluster-info
-
-echo "--- Available Pods ---"
-kubectl get pods
