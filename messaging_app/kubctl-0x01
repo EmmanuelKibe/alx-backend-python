@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# 1. Scale the deployment to 3 replicas
+echo "Scaling deployment to 3 replicas..."
+kubectl scale deployment/messaging-app-deployment --replicas=3
+
+# 2. Verify the pods are running
+echo "--- Verifying Pods ---"
+kubectl get pods
+
+# 3. Wait for pods to be ready
+echo "Waiting for pods to initialize..."
+kubectl wait --for=condition=available --timeout=60s deployment/messaging-app-deployment
+
+# 4. Perform load testing with wrk
+# We use minikube service to get the internal URL
+echo "--- Starting Load Test ---"
+URL=$(minikube service messaging-app-service --url --profile=primary)
+wrk -t12 -c40 -d30s $URL
+
+# 5. Monitor Resource Usage
+echo "--- Resource Usage ---"
+kubectl top pods
