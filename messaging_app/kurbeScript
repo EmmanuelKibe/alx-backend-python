@@ -5,6 +5,8 @@ minikube start --driver=docker --profile=primary
 # Load the local image into the cluster before applying the YAML
 minikube image load messaging_app-web:latest --profile=primary
 
+kubectl apply -f deployment.yaml
+
 echo "--- Cluster Info ---"
 kubectl cluster-info
 
