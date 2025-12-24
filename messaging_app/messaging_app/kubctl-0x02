@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# 1. Deploy Blue (Old) and Green (New)
+echo "Deploying Blue and Green versions..."
+kubectl apply -f blue_deployment.yaml
+kubectl apply -f green_deployment.yaml
+
+# 2. Wait for Green to be ready
+echo "Waiting for Green deployment to initialize..."
+kubectl wait --for=condition=available --timeout=60s deployment/messaging-app-green
+
+# 3. Check logs of the New (Green) version for errors
+echo "--- Checking Green Version Logs ---"
+kubectl logs -l app=messaging-app,version=v2 --tail=20
+
+# 4. Show the switch status
+echo "--- Current Traffic is pointing to: ---"
+kubectl get svc messaging-app-service -o jsonpath='{.spec.selector.version}'
+echo -e "\nTo switch to Green, update kubeservice.yaml selector to v2 and apply."
