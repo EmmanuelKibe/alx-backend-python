@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# 1. Apply the updated deployment
+echo "Starting Rolling Update to version 2.0..."
+kubectl apply -f blue_deployment.yaml
+
+# 2. Start a background loop to test for downtime
+echo "Monitoring for downtime (sending requests)..."
+(
+  for i in {1..20}; do
+    # Replace localhost with your minikube IP if not using tunnel
+    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/)
+    if [ "$RESPONSE" -eq 200 ]; then
+      echo "Step $i: App is UP (Status 200)"
+    else
+      echo "Step $i: App is DOWN or ERROR (Status $RESPONSE)"
+    fi
+    sleep 1
+  done
+) &
+
+# 3. Monitor the rollout status
+echo "Waiting for rollout to finish..."
+kubectl rollout status deployment/messaging-app-blue
+
+# 4. Verify final pod state
+echo "--- Final Pod Status ---"
+kubectl get pods -l app=messaging-app,version=v1
