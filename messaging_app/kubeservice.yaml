@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     app: messaging-app
-    version: v2 # This points to Blue initially
+    version: v2 
   ports:
     - protocol: TCP
       port: 80
