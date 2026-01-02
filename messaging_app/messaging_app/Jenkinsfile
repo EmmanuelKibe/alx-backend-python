@@ -16,9 +16,9 @@ pipeline {
                         . venv/bin/activate
                         
                         # Rubric Requirement: Use 'pip' and explicit path
-                        pip install -r ../messaging_app/requirements.txt
-                        pip install pytest pytest-django
-                        
+                        pip3 install -r ../messaging_app/requirements.txt
+                        pip3 install pytest pytest-django
+
                         mkdir -p test-reports
                         
                         # Run pytest on the current directory. 
