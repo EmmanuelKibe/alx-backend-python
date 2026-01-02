@@ -1,8 +1,8 @@
 pipeline {
     agent any
     environment {
-        // Replace with your actual Docker Hub username
-        DOCKER_HUB_USER = 'emmanueljosephkibe'
+        // Double-check this username matches your Docker Hub account exactly
+        DOCKER_HUB_USER = 'emmanueljosephkibe' 
         APP_NAME = 'messaging-app'
         IMAGE_NAME = "${DOCKER_HUB_USER}/${APP_NAME}"
     }
@@ -20,25 +20,38 @@ pipeline {
                     sh '''
                         python3 -m venv venv
                         . venv/bin/activate
-                        
-                        # Rubric Requirement: Use 'pip3' and explicit path
                         pip3 install -r requirements.txt
                         pip3 install pytest pytest-django
-
                         mkdir -p test-reports
-                        
-                        # Run pytest on the current directory. 
-                        # --suppress-no-test-exit-code ensures the build doesn't fail if you have no tests yet.
-                        pytest . --junitxml=test-reports/results.xml || true
+                        pytest . --junitxml=test-reports/results.xml
                     '''
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                // This assumes your Dockerfile is inside the messaging_app folder
+                dir('messaging_app') {
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                    sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                 usernameVariable: 'DOCKER_USER', 
+                                 passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
+                    sh "docker push ${IMAGE_NAME}:latest"
                 }
             }
         }
     }
     post {
         always {
-            // Use wildcards to locate the test report files
-            junit '**/test-reports/results.xml' 
+            junit '**/test-reports/results.xml'
         }
     }
 }
