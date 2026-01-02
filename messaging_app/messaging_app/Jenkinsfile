@@ -10,19 +10,21 @@ pipeline {
         }
         stage('Test') {
             steps {
-                // This block uses the ShiningPanda plugin
-                // 'Python3' must match the name you gave in Tools
                 pythonVirtualenv(pythonHome: 'Python3') {
-                    sh 'pip install -r requirements.txt'
-                    sh 'pip install pytest pytest-django'
-                    sh 'pytest --junitxml=test-reports/results.xml'
+                    // This ensures pip looks for requirements.txt inside messaging_app
+                    dir('messaging_app') { 
+                        sh 'pip install -r requirements.txt'
+                        sh 'pip install pytest pytest-django'
+                        // The report is generated inside messaging_app/test-reports/
+                        sh 'pytest --junitxml=test-reports/results.xml'
+                    }
                 }
             }
         }
     }
     post {
         always {
-            junit 'test-reports/results.xml'
+            junit 'messaging_app/test-reports/results.xml'
         }
     }
 }
