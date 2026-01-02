@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    environment {
+        // Replace with your actual Docker Hub username
+        DOCKER_HUB_USER = 'emmanueljosephkibe'
+        APP_NAME = 'messaging-app'
+        IMAGE_NAME = "${DOCKER_HUB_USER}/${APP_NAME}"
+    }
     stages {
         stage('Checkout') {
             steps {
