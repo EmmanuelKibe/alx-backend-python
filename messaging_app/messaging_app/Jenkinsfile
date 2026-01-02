@@ -24,7 +24,7 @@ pipeline {
     }
     post {
         always {
-            junit 'messaging_app/test-reports/results.xml'
+            junit 'messaging_app/messaging_app/test-reports/results.xml'
         }
     }
 }
