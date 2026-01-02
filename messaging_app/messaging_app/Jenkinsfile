@@ -3,6 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the code from GitHub
                 git branch: 'main', 
                     credentialsId: 'github-creds', 
                     url: 'https://github.com/EmmanuelKibe/alx-backend-python'
@@ -10,20 +11,23 @@ pipeline {
         }
         stage('Test') {
             steps {
-                pythonVirtualenv(pythonHome: 'Python3') {
-                    // This ensures pip looks for requirements.txt inside messaging_app
-                    dir('messaging_app') { 
-                        sh 'pip install -r requirements.txt'
-                        sh 'pip install pytest pytest-django'
-                        // The report is generated inside messaging_app/test-reports/
-                        sh 'pytest --junitxml=test-reports/results.xml'
-                    }
+                // We move into the subdirectory and run commands manually
+                dir('messaging_app') {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                        pip install pytest pytest-django
+                        mkdir -p test-reports
+                        pytest --junitxml=test-reports/results.xml
+                    '''
                 }
             }
         }
     }
     post {
         always {
+            // Jenkins will look here for the report to visualize it
             junit 'messaging_app/messaging_app/test-reports/results.xml'
         }
     }
