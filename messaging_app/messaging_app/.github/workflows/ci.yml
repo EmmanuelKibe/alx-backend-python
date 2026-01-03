@@ -10,7 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Setup MySQL as a service container
     services:
       mysql:
         image: mysql:8.0
@@ -34,13 +33,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y default-libmysqlclient-dev pkg-config
-          python -m pip3 install --upgrade pip
-          pip3 install -r messaging_app/requirements.txt
-          pip3 install pytest pytest-django
+          python -m pip install --upgrade pip
+          pip install -r messaging_app/requirements.txt
+          pip install pytest pytest-django pytest-cov flake8
 
-      - name: Run Tests
+      - name: Run Linting (flake8)
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          # exit-zero treats all errors as warnings (we want it to fail, so we don't use it)
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # max-line-length is 127 chars to be flexible
+          flake8 . --count --max-line-length=127 --statistics
+
+      - name: Run Tests with Coverage
         env:
-          # Match these to your Django settings.py database config
           DB_ENGINE: django.db.backends.mysql
           DB_NAME: messaging_db
           DB_USER: root
@@ -49,4 +55,10 @@ jobs:
           DB_PORT: 3306
         run: |
           cd messaging_app
-          pytest
+          pytest --cov=. --cov-report=html --cov-report=xml
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: messaging_app/htmlcov/
